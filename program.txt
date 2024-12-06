@@ -1,0 +1,590 @@
+package vehiclemaintenance;
+
+import javax.swing.*;
+
+public class Main {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Vehicle Maintenance System");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(800, 600);
+            frame.setContentPane(new VehiclePanel());
+            frame.setVisible(true);
+   });
+ }
+}
+package Attendance;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class LoginController {
+    private Map<String, User> users; // Store users by username
+
+    public LoginController() {
+        users = new HashMap<>();
+        // Add some sample users (Teacher and Student)
+        users.put("teacher1", new User(1, "Mr. John", "Teacher", "teacherpass"));
+        users.put("student1", new User(2, "Alice", "Student", "studentpass"));
+    }
+
+    // Check if a username is valid
+    public boolean isValidUsername(String username) {
+        return users.containsKey(username);
+    }
+
+    // Login user by username and password
+    public User login(String username, String password) {
+        User user = users.get(username);
+        if (user != null && user.getPassword().equals(password)) {
+            return user;
+        }
+        return null;
+ }
+}
+package Attendance;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class DataStorage {
+    private final Map<String, User> users; // Stores all users
+    private final List<String> subjects;  // List of subjects
+    private final Map<String, Map<String, List<AttendanceRecord>>> attendance; // Subject -> Student -> Attendance
+
+    public DataStorage() {
+        users = new HashMap<>();
+        users.put("teacher1", new User(1, "teacher1", "password123", "Teacher"));
+        users.put("student1", new User(2, "student1", "password123", "Student"));
+
+        subjects = new ArrayList<>();
+        subjects.add("Math");
+        subjects.add("Science");
+        subjects.add("English");
+
+        attendance = new HashMap<>();
+    }
+
+    public List<String> getSubjects() {
+        return subjects;
+    }
+
+    public Map<String, Map<String, List<AttendanceRecord>>> getAttendance() {
+        return attendance;
+    }
+
+    // Define a simple User class for demonstration
+    public static class User {
+        int id;
+        String username;
+        String password;
+        String role;
+
+        public User(int id, String username, String password, String role) {
+            this.id = id;
+            this.username = username;
+            this.password = password;
+            this.role = role;
+        }
+    }
+
+    public static class AttendanceRecord {
+        String date;
+        String status; // Present or Absent
+
+        public AttendanceRecord(String date, String status) {
+            this.date = date;
+            this.status = status;
+  }
+ }
+}
+package Attendance;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class AttendanceController {
+    private Map<String, List<User>> classes; // Store students by class name
+    private Map<Integer, String> attendanceRecords; // Store attendance records by user ID
+
+    public AttendanceController() {
+        classes = new HashMap<>();
+        attendanceRecords = new HashMap<>();
+    }
+
+    // Add students to a class
+    public void addStudentsToClass(String className, List<User> students) {
+        classes.put(className, students);
+    }
+
+    // Get all students in a class
+    public List<User> getStudentsInClass(String className) {
+        return classes.get(className);
+    }
+
+    // Mark attendance for a student
+    public void markAttendance(int studentId, String status) {
+        attendanceRecords.put(studentId, status);
+    }
+
+    // Get attendance status for a student
+    public String getAttendanceStatus(int studentId) {
+        return attendanceRecords.getOrDefault(studentId, "Not marked");
+ }
+}
+package Attendance;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+public class AddAttendance {
+
+    private Map<Integer, User> users; // Store users by their ID (e.g., students or teachers)
+    private DefaultTableModel model;
+
+    public AddAttendance() {
+        users = new HashMap<>();
+        // Add sample users (this could be expanded or fetched from elsewhere)
+        users.put(1, new User(1, "Mr. John", "Teacher", "teacherpass"));
+        users.put(2, new User(2, "Alice", "Student", "studentpass"));
+        model = new DefaultTableModel();
+    }
+
+    public void addView() {
+        JFrame frame = new JFrame();
+        Font text = new Font("Times New Roman", Font.PLAIN, 18);
+        Font btn = new Font("Times New Roman", Font.BOLD, 20);
+
+        // Close button
+        JLabel x = new JLabel("X");
+        x.setForeground(Color.decode("#37474F"));
+        x.setBounds(965, 10, 100, 20);
+        x.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        frame.add(x);
+        x.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                System.exit(0);
+            }
+        });
+
+        // Back button
+        JLabel back = new JLabel("< BACK");
+        back.setForeground(Color.decode("#37474F"));
+        back.setFont(new Font("Times New Roman", Font.BOLD, 17));
+        back.setBounds(18, 10, 100, 20);
+        frame.add(back);
+        back.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                frame.dispose();
+            }
+        });
+
+        // Panel
+        JPanel panel = new JPanel();
+        panel.setBounds(0, 0, 1000, 35);
+        panel.setBackground(Color.decode("#DEE4E7"));
+        frame.add(panel);
+
+        // Table setup
+        JTable table = new JTable() {
+            public boolean isCellEditable(int row, int column) {
+                return false; // Prevent editing of table cells
+            }
+        };
+        model = (DefaultTableModel) table.getModel();
+        model.addColumn("ID");
+        model.addColumn("NAME");
+        model.addColumn("STATUS");
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);
+        table.getColumnModel().getColumn(1).setPreferredWidth(200);
+        table.getColumnModel().getColumn(2).setPreferredWidth(200);
+        JScrollPane scPane = new JScrollPane(table);
+        scPane.setBounds(500, 50, 480, 525);
+        frame.add(scPane);
+
+        // Date field
+        JLabel dt = new JLabel("DATE : ");
+        dt.setFont(text);
+        dt.setBounds(25, 60, 75, 20);
+        dt.setForeground(Color.decode("#DEE4E7"));
+        frame.add(dt);
+        JTextField dtbox = new JTextField();
+        dtbox.setBounds(100, 60, 150, 25);
+        dtbox.setBackground(Color.decode("#DEE4E7"));
+        dtbox.setFont(text);
+        dtbox.setForeground(Color.decode("#37474F"));
+        dtbox.setText(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        frame.add(dtbox);
+
+        // Class selection
+        JLabel classes = new JLabel("CLASS : ");
+        classes.setFont(text);
+        classes.setBounds(25, 150, 100, 20);
+        classes.setForeground(Color.decode("#DEE4E7"));
+        frame.add(classes);
+        JComboBox<String> clss = new JComboBox<>(new String[]{"Class A", "Class B", "Class C"});
+        clss.setBounds(110, 150, 150, 25);
+        frame.add(clss);
+
+        // Error message
+        JLabel txt = new JLabel("");
+        txt.setFont(text);
+        txt.setBounds(125, 525, 350, 20);
+        txt.setForeground(Color.red);
+        frame.add(txt);
+
+        // View button
+        JButton view = new JButton("VIEW");
+        view.setBounds(175, 275, 150, 50);
+        view.setFont(btn);
+        view.setBackground(Color.decode("#DEE4E7"));
+        view.setForeground(Color.decode("#37474F"));
+        frame.add(view);
+        view.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Dummy logic for checking if attendance is already marked for the day
+                txt.setText("Viewing attendance for selected class.");
+                updateTable((String) clss.getSelectedItem());
+            }
+        });
+
+        // Absence button
+        JButton ab = new JButton("ABSENT");
+        ab.setBounds(75, 365, 150, 50);
+        ab.setFont(btn);
+        ab.setBackground(Color.decode("#DEE4E7"));
+        ab.setForeground(Color.decode("#37474F"));
+        frame.add(ab);
+        ab.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (table.getSelectedRow() != -1) {
+                    table.setValueAt("Absent", table.getSelectedRow(), 2);
+                }
+            }
+        });
+
+        // Present button
+        JButton pre = new JButton("PRESENT");
+        pre.setBounds(275, 365, 150, 50);
+        pre.setFont(btn);
+        pre.setBackground(Color.decode("#DEE4E7"));
+        pre.setForeground(Color.decode("#37474F"));
+        frame.add(pre);
+        pre.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (table.getSelectedRow() != -1) {
+                    table.setValueAt("Present", table.getSelectedRow(), 2);
+                }
+            }
+        });
+
+        // Submit button
+        JButton sbmt = new JButton("SUBMIT");
+        sbmt.setBounds(175, 450, 150, 50);
+        sbmt.setFont(btn);
+        sbmt.setBackground(Color.decode("#DEE4E7"));
+        sbmt.setForeground(Color.decode("#37474F"));
+        frame.add(sbmt);
+        sbmt.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // This could save the attendance in a structure or process it further
+                txt.setText("Attendance marked successfully.");
+                // Clear table after submitting attendance
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    model.removeRow(i);
+                }
+                model.setRowCount(0);
+            }
+        });
+
+        frame.setSize(1000, 600);
+        frame.setResizable(false);
+        frame.setLayout(null);
+        frame.setUndecorated(true);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        frame.setFocusable(true);
+        frame.getContentPane().setBackground(Color.decode("#37474F"));
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    public void updateTable(String className) {
+        // Dummy data for student names based on class (this should be dynamic in a real app)
+        String[][] students = {
+                {"1", "Mr. John", "Teacher"},
+                {"2", "Alice", "Student"},
+                {"3", "Bob", "Student"}
+        };
+
+        for (int i = 0; i < students.length; i++) {
+            model.addRow(new Object[]{students[i][0], students[i][1], "Absent"});
+  }
+ }
+}
+package vehiclemaintenance;
+
+import javax.swing.*;
+
+public class Main {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Vehicle Maintenance System");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(800, 600);
+            frame.setContentPane(new VehiclePanel());
+            frame.setVisible(true);
+   });
+}
+}
+package vehiclemaintenance;
+
+import java.util.Date;
+
+public class MaintenanceRecord {
+    private String maintenanceType;
+    private Date dueDate;
+    private boolean completed;
+
+    public MaintenanceRecord(String maintenanceType, Date dueDate) {
+        this.maintenanceType = maintenanceType;
+        this.dueDate = dueDate;
+        this.completed = false;
+    }
+
+    public String getMaintenanceType() {
+        return maintenanceType;
+    }
+
+    public Date getDueDate() {
+        return dueDate;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+}
+}
+package vehiclemaintenance;
+
+public class Vehicle {
+    private String registrationNumber;
+    private String model;
+    private String ownerName;
+
+    public Vehicle(String registrationNumber, String model, String ownerName) {
+        this.registrationNumber = registrationNumber;
+        this.model = model;
+        this.ownerName = ownerName;
+    }
+
+    public String getRegistrationNumber() {
+        return registrationNumber;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+ }
+}
+package vehiclemaintenance;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class VehicleMaintenanceSystem {
+    private List<Vehicle> vehicles = new ArrayList<>();
+    private List<MaintenanceRecord> maintenanceRecords = new ArrayList<>();
+
+    public void addVehicle(String reg, String model, String owner) {
+        vehicles.add(new Vehicle(reg, model, owner));
+    }
+
+    public void addMaintenanceRecord(String type, Date dueDate) {
+        maintenanceRecords.add(new MaintenanceRecord(type, dueDate));
+    }
+
+    public List<Vehicle> getVehicles() {
+        return vehicles;
+    }
+
+    public List<MaintenanceRecord> getMaintenanceRecords() {
+        return maintenanceRecords;
+ }
+}
+package vehiclemaintenance;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class VehiclePanel extends JPanel {
+    private JTable vehicleTable;
+    private JTable maintenanceTable;
+    private JTextField regField, modelField, ownerField, maintenanceTypeField, dueDateField;
+    private VehicleMaintenanceSystem system;
+
+    public VehiclePanel() {
+        system = new VehicleMaintenanceSystem();
+        setLayout(new BorderLayout());
+
+        // Form panels
+        JPanel formsPanel = new JPanel(new GridLayout(2, 1));
+
+        // Vehicle form
+        JPanel vehicleFormPanel = createVehicleForm();
+        formsPanel.add(vehicleFormPanel);
+
+        // Maintenance form
+        JPanel maintenanceFormPanel = createMaintenanceForm();
+        formsPanel.add(maintenanceFormPanel);
+
+        add(formsPanel, BorderLayout.NORTH);
+
+        // Tables
+        JPanel tablesPanel = new JPanel(new GridLayout(2, 1));
+        vehicleTable = new JTable();
+        maintenanceTable = new JTable();
+
+        refreshVehicleTable();
+        refreshMaintenanceTable();
+
+        tablesPanel.add(new JScrollPane(vehicleTable));
+        tablesPanel.add(new JScrollPane(maintenanceTable));
+
+        add(tablesPanel, BorderLayout.CENTER);
+    }
+
+    private JPanel createVehicleForm() {
+        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
+        panel.setBorder(BorderFactory.createTitledBorder("Add Vehicle"));
+
+        regField = new JTextField();
+        modelField = new JTextField();
+        ownerField = new JTextField();
+        JButton addButton = new JButton("Add Vehicle");
+
+        addButton.addActionListener(e -> addVehicle());
+
+        panel.add(new JLabel("Registration Number:"));
+        panel.add(regField);
+        panel.add(new JLabel("Model:"));
+        panel.add(modelField);
+        panel.add(new JLabel("Owner:"));
+        panel.add(ownerField);
+        panel.add(new JLabel(""));
+        panel.add(addButton);
+
+        return panel;
+    }
+
+    private JPanel createMaintenanceForm() {
+        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
+        panel.setBorder(BorderFactory.createTitledBorder("Add Maintenance Record"));
+
+        maintenanceTypeField = new JTextField();
+        dueDateField = new JTextField();
+        JButton addButton = new JButton("Add Maintenance");
+
+        addButton.addActionListener(e -> addMaintenanceRecord());
+
+        panel.add(new JLabel("Maintenance Type:"));
+        panel.add(maintenanceTypeField);
+        panel.add(new JLabel("Due Date (MM/DD/YYYY):"));
+        panel.add(dueDateField);
+        panel.add(new JLabel(""));
+        panel.add(addButton);
+
+        return panel;
+    }
+
+    private void addVehicle() {
+        String reg = regField.getText();
+        String model = modelField.getText();
+        String owner = ownerField.getText();
+
+        if (reg.isEmpty() || model.isEmpty() || owner.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields for the vehicle.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        system.addVehicle(reg, model, owner);
+        refreshVehicleTable();
+        clearVehicleForm();
+    }
+
+    private void addMaintenanceRecord() {
+        String type = maintenanceTypeField.getText();
+        String dueDateStr = dueDateField.getText();
+
+        if (type.isEmpty() || dueDateStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields for the maintenance record.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            Date dueDate = new SimpleDateFormat("MM/dd/yyyy").parse(dueDateStr);
+            system.addMaintenanceRecord(type, dueDate);
+            refreshMaintenanceTable();
+            clearMaintenanceForm();
+        } catch (ParseException e) {
+            JOptionPane.showMessageDialog(this, "Invalid date format. Please use MM/DD/YYYY.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void refreshVehicleTable() {
+        String[][] data = new String[system.getVehicles().size()][3];
+        for (int i = 0; i < system.getVehicles().size(); i++) {
+            Vehicle v = system.getVehicles().get(i);
+            data[i][0] = v.getRegistrationNumber();
+            data[i][1] = v.getModel();
+            data[i][2] = v.getOwnerName();
+        }
+
+        String[] columnNames = {"Registration Number", "Model", "Owner"};
+        vehicleTable.setModel(new javax.swing.table.DefaultTableModel(data, columnNames));
+    }
+
+    private void refreshMaintenanceTable() {
+        String[][] data = new String[system.getMaintenanceRecords().size()][3];
+        for (int i = 0; i < system.getMaintenanceRecords().size(); i++) {
+            MaintenanceRecord r = system.getMaintenanceRecords().get(i);
+            data[i][0] = r.getMaintenanceType();
+            data[i][1] = new SimpleDateFormat("MM/dd/yyyy").format(r.getDueDate());
+            data[i][2] = r.isCompleted() ? "Completed" : "Pending";
+        }
+
+        String[] columnNames = {"Maintenance Type", "Due Date", "Status"};
+        maintenanceTable.setModel(new javax.swing.table.DefaultTableModel(data, columnNames));
+    }
+
+    private void clearVehicleForm() {
+        regField.setText("");
+        modelField.setText("");
+        ownerField.setText("");
+    }
+
+    private void clearMaintenanceForm() {
+        maintenanceTypeField.setText("");
+        dueDateField.setText("");
+		}
+}
